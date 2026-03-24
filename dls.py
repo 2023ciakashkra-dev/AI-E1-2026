@@ -1,5 +1,6 @@
 def dls(graph, node, goal, depth, visited):
     if node == goal:
+        print(f"\n✅ Goal node {goal} found")
         return True
     
     if depth <= 0:
@@ -15,19 +16,7 @@ def dls(graph, node, goal, depth, visited):
     return False
 
 
-def iddfs(graph, start, goal, max_depth):
-    for depth in range(max_depth + 1):
-        visited = set()
-        print(f"Searching at depth {depth}...")
-
-        if dls(graph, start, goal, depth, visited):
-            print(f"\n✅ Goal node {goal} found at depth {depth}")
-            return
-
-    print("\n Goal node not found")
-
-
-
+# Input section (same style as your code)
 n = int(input("Enter number of nodes: "))
 
 graph = {}
@@ -39,6 +28,11 @@ for i in range(n):
 
 start = int(input("Enter start node: "))
 goal = int(input("Enter goal node: "))
-max_depth = int(input("Enter maximum depth limit: "))
+depth_limit = int(input("Enter depth limit: "))
 
-iddfs(graph, start, goal, max_depth)=3
+visited = set()
+
+print(f"\nSearching with depth limit {depth_limit}...")
+
+if not dls(graph, start, goal, depth_limit, visited):
+    print("\n❌ Goal node not found within depth limit")
