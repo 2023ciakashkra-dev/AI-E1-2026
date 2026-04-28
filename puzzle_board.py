@@ -1,10 +1,10 @@
 import heapq
 
-# Goal State
-GOAL_STATE = [1, 2, 3,
-              4, 5, 6,
-              7, 8, 0]
-
+GOAL_STATE = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
+]
 
 class Puzzle:
     def __init__(self, state, parent=None, move="", depth=0):
@@ -12,114 +12,127 @@ class Puzzle:
         self.parent = parent
         self.move = move
         self.depth = depth
-        self.cost = 0   # f(n) = g(n) + h(n)
+        self.blank_pos = self.find_blank()
 
-    # Display board
+    def find_blank(self):
+        for i in range(3):
+            for j in range(3):
+                if self.state[i][j] == 0:
+                    return (i, j)
+
     def display(self):
-        for i in range(0, 9, 3):
-            print(self.state[i:i+3])
+        for row in self.state:
+            print(row)
         print()
 
-    # Check goal state
     def is_goal(self):
         return self.state == GOAL_STATE
 
-    # Find position of blank (0)
-    def get_blank_index(self):
-        return self.state.index(0)
-
-    # Generate successors
     def generate_successors(self):
         successors = []
-        blank = self.get_blank_index()
+        x, y = self.blank_pos
 
         moves = {
-            "UP": -3,
-            "DOWN": 3,
-            "LEFT": -1,
-            "RIGHT": 1
+            "Up": (x - 1, y),
+            "Down": (x + 1, y),
+            "Left": (x, y - 1),
+            "Right": (x, y + 1)
         }
 
-        for move, pos in moves.items():
-            new_blank = blank + pos
+        for direction, (new_x, new_y) in moves.items():
+            if 0 <= new_x < 3 and 0 <= new_y < 3:
+                new_state = [row[:] for row in self.state]
 
-            # Valid move conditions
-            if move == "LEFT" and blank % 3 == 0:
-                continue
-            if move == "RIGHT" and blank % 3 == 2:
-                continue
-            if 0 <= new_blank < 9:
-                new_state = self.state[:]
-                new_state[blank], new_state[new_blank] = new_state[new_blank], new_state[blank]
-                successors.append(Puzzle(new_state, self, move, self.depth + 1))
+                tile_moved = new_state[new_x][new_y]  # tile coming into blank
+
+                # Swap
+                new_state[x][y], new_state[new_x][new_y] = new_state[new_x][new_y], new_state[x][y]
+
+                move_desc = f"Move {tile_moved} {direction}"
+
+                successors.append(Puzzle(new_state, self, move_desc, self.depth + 1))
 
         return successors
 
-    # Heuristic: Manhattan Distance
-    def heuristic(self):
-        distance = 0
-        for i in range(9):
-            if self.state[i] != 0:
-                goal_pos = GOAL_STATE.index(self.state[i])
-                x1, y1 = divmod(i, 3)
-                x2, y2 = divmod(goal_pos, 3)
-                distance += abs(x1 - x2) + abs(y1 - y2)
-        return distance
-
-    # f(n) = g(n) + h(n)
-    def calculate_cost(self):
-        self.cost = self.depth + self.heuristic()
-
     def __lt__(self, other):
-        return self.cost < other.cost
+        return False
 
 
-# A* Search Algorithm
+def manhattan_distance(state):
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            value = state[i][j]
+            if value != 0:
+                goal_x = (value - 1) // 3
+                goal_y = (value - 1) % 3
+                distance += abs(i - goal_x) + abs(j - goal_y)
+    return distance
+
+
 def a_star(initial_state):
     start = Puzzle(initial_state)
-    start.calculate_cost()
 
     open_list = []
-    heapq.heappush(open_list, start)
+    heapq.heappush(open_list, (manhattan_distance(start.state), start))
 
     visited = set()
 
     while open_list:
-        current = heapq.heappop(open_list)
+        _, current = heapq.heappop(open_list)
+
+        state_tuple = tuple(tuple(row) for row in current.state)
+
+        if state_tuple in visited:
+            continue
+
+        visited.add(state_tuple)
 
         if current.is_goal():
-            print("\n✅ Goal State Reached!\n")
-            print_solution(current)
-            return
+            return current
 
-        visited.add(tuple(current.state))
+        for neighbor in current.generate_successors():
+            neighbor_tuple = tuple(tuple(row) for row in neighbor.state)
 
-        for child in current.generate_successors():
-            if tuple(child.state) not in visited:
-                child.calculate_cost()
-                heapq.heappush(open_list, child)
+            if neighbor_tuple not in visited:
+                cost = neighbor.depth + manhattan_distance(neighbor.state)
+                heapq.heappush(open_list, (cost, neighbor))
 
-    print("❌ No solution found")
+    return None
 
 
-# Print solution path
-def print_solution(node):
+# 🔹 UPDATED PRINT FUNCTION
+def print_solution(goal_node):
     path = []
-    while node:
-        path.append(node)
-        node = node.parent
+    current = goal_node
+
+    while current:
+        path.append(current)
+        current = current.parent
 
     path.reverse()
 
-    print(f"Total moves: {len(path) - 1}\n")
+    print("Initial State:")
+    path[0].display()
 
-    for step in path:
-        print(f"Move: {step.move}")
-        step.display()
+    for i in range(1, len(path)):
+        print(f"Move {i}: {path[i].move}")
+        path[i].display()
+
+    print("Goal State Reached!")
 
 
-# Input
-print("Enter initial state (use 0 for blank):")
-initial = list(map(int, input().split()))
+# Example
+if __name__ == "__main__":
+    initial_state = [
+        [1, 2, 3],
+        [4, 0, 6],
+        [7, 5, 8]
+    ]
 
-a_star(initial)
+    solution = a_star(initial_state)
+
+    if solution:
+        print_solution(solution)
+    else:
+        print("No solution found.")

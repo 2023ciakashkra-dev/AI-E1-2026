@@ -1,38 +1,33 @@
-def dls(graph, node, goal, depth, visited):
-    if node == goal:
-        print(f"\n✅ Goal node {goal} found")
-        return True
+def dls(node, depth, limit, tree, levels):
+    if node is None:
+        return
     
-    if depth <= 0:
-        return False
+    # Ensure list exists for this depth
+    if depth not in levels:
+        levels[depth] = []
+    
+    levels[depth].append(node)
+    
+    # Stop if depth limit reached
+    if depth == limit:
+        return
+    
+    for child in tree.get(node, []):
+        dls(child, depth + 1, limit, tree, levels)
 
-    visited.add(node)
 
-    for neighbor in graph.get(node, []):
-        if neighbor not in visited:
-            if dls(graph, neighbor, goal, depth - 1, visited):
-                return True
+# Driver code
+tree = {
+    1: [2, 3],
+    2: [4, 5],
+    3: [6, 7]
+}
 
-    return False
+limit = 2
+levels = {}
 
+dls(1, 0, limit, tree, levels)
 
-# Input section (same style as your code)
-n = int(input("Enter number of nodes: "))
-
-graph = {}
-
-print("Enter adjacency list (space-separated neighbors):")
-for i in range(n):
-    neighbors = list(map(int, input(f"Node {i}: ").split()))
-    graph[i] = neighbors
-
-start = int(input("Enter start node: "))
-goal = int(input("Enter goal node: "))
-depth_limit = int(input("Enter depth limit: "))
-
-visited = set()
-
-print(f"\nSearching with depth limit {depth_limit}...")
-
-if not dls(graph, start, goal, depth_limit, visited):
-    print("\n❌ Goal node not found within depth limit")
+# Display output
+for depth in range(limit + 1):
+    print(f"Depth {depth}: Visited Nodes {levels.get(depth, [])}") 

@@ -1,26 +1,26 @@
-def dfs(node, visited, graph):
-    if node not in visited:
-        print(node, end=" ")
-        visited.add(node)
-        
-        for neighbor in graph[node]:
-            dfs(neighbor, visited, graph)
+def dfs(tree, node, visited=None):
+    if visited is None:
+        visited = []
+
+    visited.append(node)
+
+    for child in tree[node]:
+        if child not in visited:
+            dfs(tree, child, visited)
+
+    return visited
 
 
-# Input same as before
-n = int(input("Enter number of edges: "))
-graph = {}
+# Example tree
+tree = {
+    'A': ['B', 'C'],
+    'B': ['D', 'E'],
+    'C': ['F'],
+    'D': [],
+    'E': [],
+    'F': []
+}
 
-print("Enter edges (node1 node2):")
-for _ in range(n):
-    u, v = input().split()
-    
-    graph.setdefault(u, []).append(v)
-    graph.setdefault(v, []).append(u)
-
-start = input("Enter starting node: ")
-
-visited = set()
-
-print("DFS Traversal:")
-dfs(start, visited, graph)
+# Execution
+print("DFS Traversal:", dfs(tree, 'A'))
+from collections import deque

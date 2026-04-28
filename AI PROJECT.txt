@@ -1,0 +1,34 @@
+AI PROJECT
+GROUP NO : 2
+SEC      : AIML "A"
+TOPIC    : QUEUE MANAGEMENT SYSTEM
+
+
+What this design includes:
+Gradient background (modern look)
+Smooth animations (Framer Motion)
+Card-based layout (clean + professional)
+Key info display:
+Now Serving
+Your Token
+Estimated Wait
+“Take Token” button
+Queue list section
+
+
+STEPS:
+
+Open terminal in VS Code and run:
+npx create-react-app queue-system
+cd queue-system
+npm start
+
+2.  Replace Default Code
+Write the code
+
+3.  Install Required Libraries
+npm install framer-motion
+
+Important Note
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
